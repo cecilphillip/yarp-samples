@@ -1,0 +1,238 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/YarpSamples.sln",
+                "--nologo"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "clean",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "clean",
+                "${workspaceFolder}/YarpSamples.sln",
+                "--nologo"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build: DemoProxy",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/DemoProxy/DemoProxy.csproj",
+                "--configuration",
+                "Debug"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish: DemoProxy",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/DemoProxy/DemoProxy.csproj",
+                "--configuration",
+                "Debug"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build: DemoItemsApi",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/DemoItemsApi/DemoItemsApi.csproj",
+                "--configuration",
+                "Debug"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish: DemoItemsApi",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/DemoItemsApi/DemoItemsApi.csproj",
+                "--configuration",
+                "Debug"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build: DemoAddressApi",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/DemoAddressApi/DemoAddressApi.csproj",
+                "--configuration",
+                "Debug"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish: DemoAddressApi",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/DemoAddressApi/DemoAddressApi.csproj",
+                "--configuration",
+                "Debug"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "type": "docker-build",
+            "label": "docker-build: demoitems image",
+            "dependsOn": [
+                "build"
+            ],
+            "dockerBuild": {
+                "tag": "demoitems:latest",
+                "target": "final",
+                "dockerfile": "${workspaceFolder}/DemoItemsApi/Dockerfile",
+                "context": "${workspaceFolder}",
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/DemoItemsApi/DemoItemsApi.csproj"
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: demoitems",
+            "dependsOn": [
+                "docker-build: demoitems image"
+            ],
+            "dockerRun": {
+                "containerName": "demoitems.service",
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Docker"
+                },
+                "ports": [
+                    {
+                        "containerPort": 443,
+                        "hostPort": 5001
+                    }
+                ]
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/DemoItemsApi/DemoItemsApi.csproj",
+                "configureSsl": true
+            }
+        },
+        {
+            "type": "docker-build",
+            "label": "docker-build: demoproxy image",
+            "dependsOn": [
+                "build"
+            ],
+            "dockerBuild": {
+                "tag": "demoproxy:latest",
+                "target": "final",
+                "dockerfile": "${workspaceFolder}/DemoProxy/Dockerfile",
+                "context": "${workspaceFolder}",
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/DemoProxy/DemoProxy.csproj"
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: demoproxy",
+            "dependsOn": [
+                "docker-build: demoproxy image"
+            ],
+            "dockerRun": {
+                "containerName": "demoproxy.service",
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Docker"
+                },
+                "ports": [
+                    {
+                        "containerPort": 443,
+                        "hostPort": 5000
+                    }
+                ]
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/DemoProxy/DemoProxy.csproj",
+                "configureSsl": true
+            }
+        },
+        {
+            "type": "docker-build",
+            "label": "docker-build: demoaddress image",
+            "dependsOn": [
+                "build"
+            ],
+            "dockerBuild": {
+                "tag": "demoaddress:latest",
+                "target": "final",
+                "dockerfile": "${workspaceFolder}/DemoAddressApi/Dockerfile",
+                "context": "${workspaceFolder}",
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/DemoAddressApi/DemoAddressApi.csproj"
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: demoaddress",
+            "dependsOn": [
+                "docker-build: demoaddress image"
+            ],
+            "dockerRun": {
+                "containerName": "demoaddress.service",
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Docker"
+                },
+                "ports": [
+                    {
+                        "containerPort": 443,
+                        "hostPort": 5002
+                    }
+                ]
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/DemoAddressApi/DemoAddressApi.csproj",
+                "configureSsl": true
+            }
+        },
+        {
+            "label": "docker-compose: proxy+APIs",
+            "type": "process",
+            "presentation": {
+                "focus": true,
+                "panel": "new",
+                "showReuseMessage": false,
+                "clear": false
+            },
+            "command": "docker-compose",
+            "args": [
+                "--file",
+                "${workspaceFolder}/docker-compose.yml",
+                "up",
+                "-d",
+                "--build"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}

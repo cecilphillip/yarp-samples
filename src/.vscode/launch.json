@@ -1,0 +1,66 @@
+{
+    // Use IntelliSense to find out which attributes exist for C# debugging
+    // Use hover for the description of the existing attributes
+    // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch DemoProxy",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build: DemoProxy",
+            "program": "${workspaceFolder}/DemoProxy/bin/Debug/netcoreapp3.1/DemoProxy.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/DemoProxy",
+            "stopAtEntry": false,           
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": "Launch DemoItemsApi",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build: DemoItemsApi",
+            "program": "${workspaceFolder}/DemoItemsApi/bin/Debug/netcoreapp3.1/DemoItemsApi.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/DemoItemsApi",
+            "stopAtEntry": false,           
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": "Launch DemoAddressApi",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build: DemoAddressApi",
+            "program": "${workspaceFolder}/DemoAddressApi/bin/Debug/netcoreapp3.1/DemoAddressApi.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/DemoAddressApi",
+            "stopAtEntry": false,           
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Launch Proxy+APIs",
+            "configurations": [
+                "Launch DemoAddressApi",
+                "Launch DemoItemsApi",
+                "Launch DemoProxy"
+            ]
+        }
+    ]
+}

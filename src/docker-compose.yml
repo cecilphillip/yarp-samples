@@ -1,0 +1,49 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP .NET Core service.
+version: "3.7"
+
+services:
+  demoproxy:
+    #cannot scale a service beyond 1 container refer to https://docs.docker.com/compose/compose-file/#container_name
+    container_name: demoproxy
+    build:
+      context: .
+      dockerfile: DemoProxy/Dockerfile
+    ports:
+      - "5000:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    networks:
+      - demo-proxy-network
+  demoaddressapi:
+    #cannot scale a service beyond 1 container refer to https://docs.docker.com/compose/compose-file/#container_name
+    container_name: addressesapi
+    build:
+      context: .
+      dockerfile: DemoAddressApi/Dockerfile
+    ports:
+      - "5002:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    networks:
+      - demo-proxy-network
+  demoitemsapi:
+    #cannot scale a service beyond 1 container refer to https://docs.docker.com/compose/compose-file/#container_name
+    container_name: demoitemsapi
+    build:
+      context: .
+      dockerfile: DemoItemsApi/Dockerfile
+    ports:
+      - "5001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    networks:
+      - demo-proxy-network
+networks:
+  demo-proxy-network:
+    driver: bridge

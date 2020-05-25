@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.ReverseProxy" Version="1.0.0-preview.1.20268.2" />
+      <PackageReference Include="System.Interactive" Version="4.1.1" />
+    </ItemGroup>
+
+</Project>
