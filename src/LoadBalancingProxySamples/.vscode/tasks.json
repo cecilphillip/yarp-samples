@@ -1,0 +1,133 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/LoadBalancingProxySamples.sln",
+                "--nologo"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "clean",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "clean",
+                "${workspaceFolder}/LoadBalancingProxySamples.sln",
+                "--nologo"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build: LBItemsApi",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/LBItemsApi/LBItemsApi.csproj",
+                "--configuration",
+                "Debug",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build: LBProxy",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/LBProxy/LBProxy.csproj",
+                "--configuration",
+                "Debug",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "type": "docker-build",
+            "label": "docker-build: LBProxy",
+            "dependsOn": [
+                "build"
+            ],
+            "dockerBuild": {
+                "tag": "lbproxy:latest",
+                "target": "final",
+                "dockerfile": "${workspaceFolder}/LBProxy/Dockerfile",
+                "context": "${workspaceFolder}",
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/LBProxy/LBProxy.csproj"
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: LBProxy",
+            "dependsOn": [
+                "docker-build: LBProxy"
+            ],
+            "dockerRun": {
+                "containerName": "lbproxy.service",
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Docker"
+                },
+                "ports": [
+                    {
+                        "containerPort": 80,
+                        "hostPort": 5000
+                    }
+                ]
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/LBProxy/LBProxy.csproj"
+            }
+        },
+        {
+            "type": "docker-build",
+            "label": "docker-build: LBItemsApi",
+            "dependsOn": [
+                "build"
+            ],
+            "dockerBuild": {
+                "tag": "lbitemsapi:latest",
+                "target": "final",
+                "dockerfile": "${workspaceFolder}/LBItemsApi/Dockerfile",
+                "context": "${workspaceFolder}",
+                "pull": true
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/LBItemsApi/LBItemsApi.csproj"
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: LBItemsApi",
+            "dependsOn": [
+                "docker-build: LBItemsApi"
+            ],
+            "dockerRun": {
+                "containerName": "lbitemsapi.service",
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Docker"
+                },
+                "ports": [
+                    {
+                        "containerPort": 80,
+                        "hostPort": 5001
+                    }
+                ]
+            },
+            "netCore": {
+                "appProject": "${workspaceFolder}/LBItemsApi/LBItemsApi.csproj"
+            }
+        },
+    ]
+}
