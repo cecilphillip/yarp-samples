@@ -13,8 +13,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
-    networks:
-      - lbproxy-network
+
+
   lbitemsapi:
     container_name: lbitemsapi
     build:
@@ -26,8 +26,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
-    networks:
-      - lbproxy-network
+
   lbitemsapi2:
     container_name: lbitemsapi2
     build:
@@ -39,8 +38,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
-    networks:
-      - lbproxy-network      
+
 networks:
-  lbproxy-network:
+  default:
+    name: lbproxy-network
     driver: bridge

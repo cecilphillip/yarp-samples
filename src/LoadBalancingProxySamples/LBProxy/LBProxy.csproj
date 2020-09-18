@@ -5,8 +5,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Bogus" Version="29.0.2" />
-      <PackageReference Include="Microsoft.ReverseProxy" Version="1.0.0-preview.1.20268.2" />
+      <PackageReference Include="Bogus" Version="31.0.2" />
+      <PackageReference Include="Microsoft.ReverseProxy" Version="1.0.0-preview.4.20424.2" />
     </ItemGroup>
 
 </Project>

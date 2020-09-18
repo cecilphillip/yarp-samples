@@ -1,12 +1,4 @@
 ﻿{
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:2314",
-      "sslPort": 44393
-    }
-  },
   "profiles": {
     "LBProxy": {
       "commandName": "Project",
