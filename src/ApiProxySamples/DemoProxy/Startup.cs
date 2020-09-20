@@ -32,8 +32,6 @@ namespace DemoProxy
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseHttpsRedirection();
-
             app.UseRouting();
             app.UseMiddleware<HttpInspectorMiddleware>();
 
@@ -47,17 +45,16 @@ namespace DemoProxy
                         var lf = proxyPipeline.ApplicationServices.GetRequiredService<ILoggerFactory>();
                         var logger = lf.CreateLogger("Proxy.Middleware");
 
-                        var destinationsFeature = context.Features.Get<IAvailableDestinationsFeature>();
+                        var destinationsFeature = context.Features.Get<IReverseProxyFeature>();
 
                         logger.LogDebug("Iterating Destinations");
-                        foreach (var dest in destinationsFeature.Destinations)
+                        foreach (var dest in destinationsFeature.AvailableDestinations)
                         {
-                            logger.LogDebug($"Destination ID: {dest.DestinationId}\nAddress: {dest.Config.Value.Address}");
+                            logger.LogDebug($"Destination ID: {dest.DestinationId}\nAddress: {dest.Config.Address}");
                         }
 
                         return next();
                     });
-                    proxyPipeline.UseProxyLoadBalancing();
                 });
             });
         }

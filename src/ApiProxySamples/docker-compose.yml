@@ -9,13 +9,12 @@ services:
       context: .
       dockerfile: DemoProxy/Dockerfile
     ports:
-      - "5000:443"
+      - "5000:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
-    networks:
-      - demo-proxy-network
+    
   demoaddressapi:
     #cannot scale a service beyond 1 container refer to https://docs.docker.com/compose/compose-file/#container_name
     container_name: addressesapi
@@ -23,13 +22,12 @@ services:
       context: .
       dockerfile: DemoAddressApi/Dockerfile
     ports:
-      - "5002:443"
+      - "5002:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
-    networks:
-      - demo-proxy-network
+    
   demoitemsapi:
     #cannot scale a service beyond 1 container refer to https://docs.docker.com/compose/compose-file/#container_name
     container_name: demoitemsapi
@@ -37,13 +35,13 @@ services:
       context: .
       dockerfile: DemoItemsApi/Dockerfile
     ports:
-      - "5001:443"
+      - "5001:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
-    networks:
-      - demo-proxy-network
+  
 networks:
-  demo-proxy-network:
+  default:
+    name: demo-proxy-network
     driver: bridge
