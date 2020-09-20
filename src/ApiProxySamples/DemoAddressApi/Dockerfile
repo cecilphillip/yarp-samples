@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 WORKDIR /app
 EXPOSE 80 443
 ENV ASPNETCORE_ENVIRONMENT=Docker \
@@ -6,7 +6,7 @@ ENV ASPNETCORE_ENVIRONMENT=Docker \
     ASPNETCORE_Kestrel__Certificates__Default__Password=1111 \
     ASPNETCORE_Kestrel__Certificates__Default__Path=/https/demoproxy.pfx
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
 COPY ["DemoAddressApi/DemoAddressApi.csproj", "DemoAddressApi/"]
 RUN dotnet restore "DemoAddressApi/DemoAddressApi.csproj"
