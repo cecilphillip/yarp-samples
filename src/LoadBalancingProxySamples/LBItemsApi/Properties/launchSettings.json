@@ -1,18 +1,8 @@
 ﻿{
   "$schema": "http://json.schemastore.org/launchsettings.json",
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:37316",
-      "sslPort": 44368
-    }
-  },
   "profiles": {
     "LBItemsApi": {
       "commandName": "Project",
-      "launchBrowser": false,
-      "launchUrl": "weatherforecast",
       "applicationUrl": "http://localhost:5001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
