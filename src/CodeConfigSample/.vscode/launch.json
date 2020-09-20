@@ -1,0 +1,49 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Docker Proxy Attach",
+            "type": "docker",
+            "request": "attach",
+            "platform": "netCore",
+            "sourceFileMap": {
+                "/src": "${workspaceFolder}/CCProxy"
+            }
+        },
+        {
+            "name": "Docker API Attach",
+            "type": "docker",
+            "request": "attach",
+            "platform": "netCore",
+            "sourceFileMap": {
+                "/src": "${workspaceFolder}/ItemsApi"
+            }
+        },
+        {
+            "name": "Debug Proxy",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build proxy",
+            "program": "${workspaceFolder}/CCProxy/bin/Debug/net5.0/CCProxy.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/CCProxy",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Debug API",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build api",
+            "program": "${workspaceFolder}/ItemsAPI/bin/Debug/net5.0/ItemsAPI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/ItemsAPI",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    ]
+}
