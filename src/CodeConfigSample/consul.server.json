@@ -1,0 +1,16 @@
+{
+  "datacenter": "yarp-dc",
+  "log_level": "INFO",
+  "bind_addr": "0.0.0.0",
+  "client_addr": "0.0.0.0",
+  "bootstrap": true,
+  "disable_update_check": true,
+  "telemetry": {
+    "prometheus_retention_time": "10s"
+  },
+  "ui": true,
+  "dns_config": {
+    "enable_truncate": true,
+    "udp_answer_limit": 100
+  }
+}
