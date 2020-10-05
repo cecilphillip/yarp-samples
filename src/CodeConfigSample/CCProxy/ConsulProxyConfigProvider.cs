@@ -9,12 +9,10 @@ namespace CCProxy
 {
     public class ConsulProxyConfigProvider : IProxyConfigProvider
     {
-        private readonly IConsulClient _consulClient;
         private volatile ConsulProxyConfig _config;
 
         public ConsulProxyConfigProvider(IConsulClient consulClient)
         {
-            _consulClient = consulClient;
             _config = new ConsulProxyConfig(null, null);
         }
 

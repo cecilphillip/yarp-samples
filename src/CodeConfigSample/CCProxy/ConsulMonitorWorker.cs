@@ -7,24 +7,24 @@ using System.Threading.Tasks;
 using Consul;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.ReverseProxy.Abstractions;
 using Microsoft.ReverseProxy.Service;
 
 namespace CCProxy
 {
-    public class ConsulMonitorWorker : BackgroundService
+    public class ConsulMonitorWorker : BackgroundService, IProxyConfigProvider
     {
-        private readonly IConsulClient _consulClient;
-        private readonly IProxyConfigProvider _proxyConfigProvider;
+        private readonly IConsulClient _consulClient;        
         private readonly IConfigValidator _proxyConfigValidator;
         private readonly ILogger<ConsulMonitorWorker> _logger;
-        private const int DEFAULT_CONSUL_POLL_INTERVAL_MINS = 2;
+        private volatile ConsulProxyConfig _config;
+        private const int DEFAULT_CONSUL_POLL_INTERVAL_MINS = 2;        
 
-        public ConsulMonitorWorker(IConsulClient consulClient, IProxyConfigProvider proxyConfigProvider,
-            IConfigValidator proxyConfigValidator, ILogger<ConsulMonitorWorker> logger)
+        public ConsulMonitorWorker(IConsulClient consulClient, IConfigValidator proxyConfigValidator, ILogger<ConsulMonitorWorker> logger)
         {
             _consulClient = consulClient;
-            _proxyConfigProvider = proxyConfigProvider;
+            _config = new ConsulProxyConfig(null, null);            
             _proxyConfigValidator = proxyConfigValidator;
             _logger = logger;
         }
@@ -39,8 +39,8 @@ namespace CCProxy
                 {
                     var clusters = await ExtractClusters(serviceResult);
                     var routes = await ExtractRoutes(serviceResult);
-                    
-                    (_proxyConfigProvider as ConsulProxyConfigProvider)?.Update(routes, clusters);
+
+                    Update(routes, clusters);
                 }
 
                 await Task.Delay(TimeSpan.FromMinutes(DEFAULT_CONSUL_POLL_INTERVAL_MINS), stoppingToken);
@@ -55,9 +55,9 @@ namespace CCProxy
             {
                 var cluster = clusters.ContainsKey(svc.Service)
                     ? clusters[svc.Service]
-                    : new Cluster {Id = svc.Service};
+                    : new Cluster { Id = svc.Service };
 
-                cluster.Destinations.Add(svc.ID, new Destination {Address = $"{svc.Address}:{svc.Port}"});
+                cluster.Destinations.Add(svc.ID, new Destination { Address = $"{svc.Address}:{svc.Port}" });
 
                 var clusterErrs = await _proxyConfigValidator.ValidateClusterAsync(cluster);
                 if (clusterErrs.Any())
@@ -83,7 +83,7 @@ namespace CCProxy
                     enableYarp.Equals("on", StringComparison.InvariantCulture))
                 {
                     if (routes.Any(r => r.ClusterId == svc.Service)) continue;
-                    
+
                     ProxyRoute route = new ProxyRoute
                     {
                         ClusterId = svc.Service,
@@ -106,6 +106,35 @@ namespace CCProxy
                 }
             }
             return routes;
+        }
+
+       public IProxyConfig GetConfig() => _config;
+
+        public virtual void Update(IReadOnlyList<ProxyRoute> routes, IReadOnlyList<Cluster> clusters)
+        {
+            var oldConfig = _config;
+            _config = new ConsulProxyConfig(routes, clusters);
+            oldConfig.SignalChange();
+        }
+
+        private class ConsulProxyConfig : IProxyConfig
+        {
+            private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+            public IReadOnlyList<ProxyRoute> Routes { get; }
+            public IReadOnlyList<Cluster> Clusters { get; }
+            public IChangeToken ChangeToken { get; }
+
+            public ConsulProxyConfig(IReadOnlyList<ProxyRoute> routes, IReadOnlyList<Cluster> clusters)
+            {
+                Routes = routes;
+                Clusters = clusters;
+                ChangeToken = new CancellationChangeToken(_cts.Token);
+            }
+
+            internal void SignalChange()
+            {
+                _cts.Cancel();
+            }
         }
     }
 }

@@ -1,15 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using CCProxy.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.ReverseProxy.Service;
 
 namespace CCProxy
@@ -22,13 +19,17 @@ namespace CCProxy
         }
 
         public IConfiguration Configuration { get; }
-        
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IProxyConfigProvider, ConsulProxyConfigProvider>();
+            services.AddSingleton<ConsulMonitorWorker>();
+            services.AddSingleton<IProxyConfigProvider>(p =>
+            {
+                return p.GetService<ConsulMonitorWorker>();
+            });
 
             services.AddReverseProxy();
-            
+
             services.AddHealthChecks();
             services.AddControllers()
                     .AddJsonOptions(option =>
@@ -36,7 +37,7 @@ namespace CCProxy
                         option.JsonSerializerOptions.IgnoreNullValues = true;
                         option.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     });
-            
+
             services.AddConsulClient(opts =>
             {
                 var consulClientConfig = Configuration.GetSection("consul:client");
@@ -50,7 +51,11 @@ namespace CCProxy
                 opts.Datacenter = dc;
             });
 
-            services.AddHostedService<ConsulMonitorWorker>();
+            services.AddHostedService<ConsulMonitorWorker>(p =>
+            {
+                return p.GetService<ConsulMonitorWorker>();
+
+            });
         }
 
 
@@ -63,11 +68,6 @@ namespace CCProxy
                 endpoints.MapHealthChecks("/health");
                 endpoints.MapReverseProxy(pipeline => pipeline.UseMiddleware<HttpInspectorMiddleware>());
                 endpoints.MapControllers();
-
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
             });
         }
     }
