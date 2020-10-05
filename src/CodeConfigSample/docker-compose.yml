@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  ##### API #####
+  ##### Proxy #####
   yarp:
     container_name: yarp_proxy
     build:
@@ -12,7 +12,7 @@ services:
     env_file:
       - .env
 
-  ##### proxy #####
+  ##### API #####
   itemsapi:
     build:
       context: ./ItemsApi
