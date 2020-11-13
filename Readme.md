@@ -1,7 +1,7 @@
 ## Messing around with [Yarp](https://github.com/microsoft/reverse-proxy).
 
 ### Building and Running
-These samples have been built with [.NET 5.0](https://dotnet.microsoft.com/download/dotnet-core?WT.mc_id=dotnet-github-cephilli). Docker config files have been included, but using Docker isn't required for running any of these. The easiest way to run each sample is by navigating into the respective folder in your terminal and execute the following command:
+These samples have been built with [.NET 5.0](https://dotnet.microsoft.com/download/dotnet-core?WT.mc_id=academic-0000-cephilli). Docker config files have been included, but using Docker isn't required for running any of these. The easiest way to run each sample is by navigating into the respective folder in your terminal and execute the following command:
 ```shell
 docker-compose up
 ```
