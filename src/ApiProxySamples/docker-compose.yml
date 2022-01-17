@@ -9,7 +9,7 @@ services:
       context: .
       dockerfile: DemoProxy/Dockerfile
     ports:
-      - "5000:80"
+      - "5002:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
     volumes:
