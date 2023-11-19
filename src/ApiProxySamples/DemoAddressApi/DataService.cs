@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Bogus;
 
 namespace DemoAddressApi
@@ -12,23 +9,25 @@ namespace DemoAddressApi
         static DataService()
         {
             Addresses = new Faker<Address>()
-                .RuleFor(i => i.ID, f => f.IndexVariable++)
-                .RuleFor(i => i.Street, f => f.Address.StreetAddress())
-                .RuleFor(i => i.City, f => f.Address.City())
-                .RuleFor(i => i.Country, f => f.Address.Country())
-                
+                .CustomInstantiator(f =>
+                    new Address(f.IndexVariable++,
+                        f.Address.StreetAddress(),
+                        f.Address.City(),
+                        f.Address.Country()))
                 .Generate(50);
         }
 
-        public static ValueTask<IEnumerable<Address>> GetAdresses()
+        public static ValueTask<IEnumerable<Address>> GetAddresses()
         {
             return new ValueTask<IEnumerable<Address>>(Addresses);
         }
 
-        public static ValueTask<Address> GetAddressByID(int id)
+        public static ValueTask<Address?> GetAddressById(int id)
         {
-            var item = Addresses.SingleOrDefault(i => i.ID == id);
-            return item != null ? new ValueTask<Address>(item) : new ValueTask<Address>();
+            var item = Addresses.SingleOrDefault(i => i.Id == id);
+            return new ValueTask<Address?>(item);
         }
     }
+
+    public record Address(int Id,string Street,string City,  string Country);
 }

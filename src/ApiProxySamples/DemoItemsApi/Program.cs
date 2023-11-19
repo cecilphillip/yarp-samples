@@ -1,26 +1,55 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using DemoItemsApi;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.OpenApi.Models;
 
-namespace DemoItemsApi
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(opts =>
 {
-    public class Program
+    opts.SwaggerDoc("v1", new OpenApiInfo
     {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+        Version = "v1",
+        Title = "Items API",
+    });
+});
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+builder.Services.AddHttpLogging(logging => { logging.LoggingFields = HttpLoggingFields.All; });
+builder.Services.AddHealthChecks();
+
+var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.DisplayOperationId();
+});
+
+app.UseHttpLogging();
+app.UseHealthChecks("/status", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        var json = JsonSerializer.Serialize(new
+        {
+            Status = report.Status.ToString(),
+            Environment = builder.Environment.EnvironmentName,
+            Application = builder.Environment.ApplicationName,
+            Platform = RuntimeInformation.FrameworkDescription
+        });
+
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync(json);
     }
-}
+});
+
+app.MapGroup("/api/items")
+    .MapItemApis()
+    .WithName("Items API")
+    .WithOpenApi();
+
+
+app.Run();
