@@ -1,0 +1,39 @@
+version: "3.8"
+
+name: apiproxysamples
+
+services:
+  demoproxy:
+    container_name: demoproxy
+    build:
+      context: ./DemoProxy
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+
+  demoaddressapi:
+    container_name: demoaddressapi
+    build:
+      context: ./DemoAddressApi
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+
+  demoitemsapi:
+    container_name: demoitemsapi
+    build:
+      context: ./DemoItemsApi
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+
+networks:
+  default:
+    name: demo-proxy-network
+    driver: bridge
