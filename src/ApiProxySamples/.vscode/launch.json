@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build: DemoProxy",
-            "program": "${workspaceFolder}/DemoProxy/bin/Debug/netcoreapp3.1/DemoProxy.dll",
+            "program": "${workspaceFolder}/DemoProxy/bin/Debug/net8.0/DemoProxy.dll",
             "args": [],
             "cwd": "${workspaceFolder}/DemoProxy",
             "stopAtEntry": false,           
@@ -25,7 +25,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build: DemoItemsApi",
-            "program": "${workspaceFolder}/DemoItemsApi/bin/Debug/netcoreapp3.1/DemoItemsApi.dll",
+            "program": "${workspaceFolder}/DemoItemsApi/bin/Debug/net8.0/DemoItemsApi.dll",
             "args": [],
             "cwd": "${workspaceFolder}/DemoItemsApi",
             "stopAtEntry": false,           
@@ -41,7 +41,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build: DemoAddressApi",
-            "program": "${workspaceFolder}/DemoAddressApi/bin/Debug/netcoreapp3.1/DemoAddressApi.dll",
+            "program": "${workspaceFolder}/DemoAddressApi/bin/Debug/net8.0/DemoAddressApi.dll",
             "args": [],
             "cwd": "${workspaceFolder}/DemoAddressApi",
             "stopAtEntry": false,           
@@ -56,7 +56,7 @@
     "compounds": [
         {
             "name": "Launch Proxy+APIs",
-            "configurations": [
+            "configurations": [                
                 "Launch DemoAddressApi",
                 "Launch DemoItemsApi",
                 "Launch DemoProxy"

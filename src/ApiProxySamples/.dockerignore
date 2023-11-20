@@ -24,3 +24,4 @@
 **/values.dev.yaml
 **/appsettings.development.json
 **/.md
+**/*.http
