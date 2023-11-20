@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/LBItemsApi/bin/Debug/netcoreapp3.1/LBItemsApi.dll",
+            "program": "${workspaceFolder}/LBItemsApi/bin/Debug/net8.0/LBItemsApi.dll",
             "args": [],
             "cwd": "${workspaceFolder}/LBItemsApi",
             "stopAtEntry": false,
@@ -24,7 +24,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/LBProxy/bin/Debug/netcoreapp3.1/LBProxy.dll",
+            "program": "${workspaceFolder}/LBProxy/bin/Debug/net8.0/LBProxy.dll",
             "args": [],
             "cwd": "${workspaceFolder}/LBProxy",
             "stopAtEntry": false,
