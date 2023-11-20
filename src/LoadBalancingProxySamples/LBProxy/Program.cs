@@ -1,23 +1,47 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpLogging;
 
-namespace LBProxy
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHttpLogging(logging => { logging.LoggingFields = HttpLoggingFields.All; });
+builder.Services.AddHealthChecks();
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
+var app = builder.Build();
+app.UseHttpLogging();
+app.UseHealthChecks("/status", new HealthCheckOptions
 {
-    public class Program
+    ResponseWriter = async (context, report) =>
     {
-        public static void Main(string[] args)
+        var json = JsonSerializer.Serialize(new
         {
-            CreateHostBuilder(args).Build().Run();
-        }
+            Status = report.Status.ToString(),
+            Environment = builder.Environment.EnvironmentName,
+            Application = builder.Environment.ApplicationName,
+            Platform = RuntimeInformation.FrameworkDescription
+        });
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync(json);
     }
-}
+});
+
+app.MapGet("/", async ctx =>
+{
+    var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
+    var payload = new
+    {
+        AvailableRoutes = new[]
+        {
+            $"{baseUrl}/items", $"{baseUrl}/addresses"
+        }
+    };
+
+    await ctx.Response.WriteAsJsonAsync(payload, new JsonSerializerOptions {WriteIndented = true });
+});
+
+app.MapReverseProxy();
+app.Run();

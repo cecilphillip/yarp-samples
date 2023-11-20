@@ -1,7 +1,7 @@
 using Bogus;
 
-namespace DemoItemsApi
-{
+namespace DemoItemsApi;
+
     public static class DataService
     {
         private static List<Item> Items { get; }
@@ -32,4 +32,3 @@ namespace DemoItemsApi
     }
 
     public record Item(int Id, string Name, string Category, string Origin, int Quantity);
-}

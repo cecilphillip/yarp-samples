@@ -1,15 +1,12 @@
-FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-EXPOSE 80
+EXPOSE 5000
 ENV ASPNETCORE_ENVIRONMENT=Docker \
-    ASPNETCORE_URLS=http://+:80     
+    ASPNETCORE_URLS=http://+:5000
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["LBItemsApi/LBItemsApi.csproj", "LBItemsApi/"]
-RUN dotnet restore "LBItemsApi/LBItemsApi.csproj"
 COPY . .
-WORKDIR "/src/LBItemsApi"
 RUN dotnet build "LBItemsApi.csproj" -c Release -o /app/build
 
 FROM build AS publish
@@ -19,3 +16,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "LBItemsApi.dll"]
+
+USER app

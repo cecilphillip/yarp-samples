@@ -15,3 +15,9 @@ Run demo with docker compose
 ```shell
 docker compose up -d 
 ```
+
+Shut down docker compose containers
+
+```shell
+docker compose down 
+```

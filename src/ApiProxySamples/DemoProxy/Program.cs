@@ -2,7 +2,6 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpLogging;
-using Yarp.ReverseProxy.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 

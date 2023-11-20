@@ -1,0 +1,36 @@
+version: "3.8"
+name: "lbproxy"
+
+services:
+  lbproxy:
+    container_name: lbproxy
+    build:
+      context: ./LBProxy
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+
+  lbitemsapi1:
+    container_name: lbitemsapi1
+    hostname: lbitemsapi1
+    build:
+      context: ./LBItemsApi
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+
+  lbitemsapi2:
+    container_name: lbitemsapi2
+    hostname: lbitemsapi2
+    build:
+      context: ./LBItemsApi
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+
+networks:
+  default:
+    name: lb-proxy
+    driver: bridge
