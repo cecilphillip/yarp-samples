@@ -1,31 +1,47 @@
-﻿using System;
+﻿using System.Net.Http.Headers;
+using CCProxy.Workers;
 using Consul;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Yarp.ReverseProxy.Configuration;
 
-namespace CCProxy
+namespace CCProxy;
+
+public static class ServiceCollectionExtensions
 {
-    public static class ServiceCollectionExtensions
+    public static IServiceCollection AddConsulClient(this IServiceCollection services,
+        IConfigurationSection config)
     {
-        public static IServiceCollection AddConsulClient(this IServiceCollection services)
+        services.AddHttpClient("Consul", client =>
         {
-            return services.AddConsulClient(options => { });
-        }
+            client.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+        });
 
-        public static IServiceCollection AddConsulClient(
-            this IServiceCollection services,
-            Action<ConsulClientConfiguration> options)
+        var host = config.GetValue<string>("host") ?? string.Empty;
+        var dc = config.GetValue<string>("datacenter") ?? string.Empty;
+
+        var consulClientConfiguration = new ConsulClientConfiguration
         {
-            /*
-             * CONSUL_HTTP_ADDR
-             * CONSUL_HTTP_SSL
-             * CONSUL_HTTP_SSL_VERIFY
-             * CONSUL_HTTP_AUTH
-             * CONSUL_HTTP_TOKEN
-             */
-            services.TryAddSingleton<IConsulClient>(sp => new ConsulClient(options));
+            Address = new Uri(host),
+            Datacenter = dc
+        };
 
-            return services;
-        }
+        services.TryAddTransient<IConsulClient>(sp =>
+        {
+            var clientFactory = sp.GetRequiredService<IHttpClientFactory>();
+
+            return new ConsulClient(consulClientConfiguration,
+                clientFactory.CreateClient("Consul"));
+        });
+
+        return services;
+    }
+
+    public static IReverseProxyBuilder LoadFromConsul(this IReverseProxyBuilder builder)
+    {
+        builder.LoadFromMemory(default,default);
+        builder.Services.AddHostedService<ConsulMonitorWorker>();
+
+        return builder;
     }
 }

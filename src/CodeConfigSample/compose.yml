@@ -1,0 +1,46 @@
+version: "3.8"
+
+name: "yarpconsul"
+
+services:
+  yarp:
+    container_name: yarp_proxy
+    build:
+      context: ./CCProxy
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      consul:
+        condition: service_started
+
+  itemsapi:
+    build:
+      context: ./ItemsApi
+      dockerfile: Dockerfile
+    ports:
+      - "5010:5010"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      consul:
+        condition: service_started
+
+  consul:
+    container_name: consul_service
+    image: hashicorp/consul:1.17
+    restart: unless-stopped
+    ports:
+      - "8500:8500" # HTTP API and UI port
+      - "8600:8600" # DNS Port
+    command: consul agent -dev -config-dir /etc/consul.d
+    volumes:
+      - ./.tmp/consul/data:/opt/consul
+      - ./consul.server.json:/etc/consul.d/consul.server.json:ro
+
+networks:
+  default:
+    name: yarp_proxy
+    driver: bridge

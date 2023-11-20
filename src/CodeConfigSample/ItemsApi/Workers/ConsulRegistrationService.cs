@@ -1,23 +1,22 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Consul;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace ItemsApi.Workers
 {
-    public class ConsulRegistrationService : BackgroundService
+    public class ConsulRegistrationService
+        : BackgroundService
     {
         private readonly IConsulClient _consulClient;
-        private readonly AgentServiceRegistration _serviceRegistration;
         private readonly ILogger<ConsulRegistrationService> _logger;
+        private readonly IConfigurationSection _config;
+        private AgentServiceRegistration? _serviceRegistration;
 
         public ConsulRegistrationService(IConsulClient consulClient,
-            AgentServiceRegistration serviceRegistration, ILogger<ConsulRegistrationService> logger)
+            IConfiguration configuration,
+            ILogger<ConsulRegistrationService> logger)
         {
             _consulClient = consulClient;
-            _serviceRegistration = serviceRegistration;
+            _config = configuration.GetSection("consul:registration");
             _logger = logger;
         }
 
@@ -25,19 +24,57 @@ namespace ItemsApi.Workers
         {
             try
             {
-                var result = await _consulClient.Agent.ServiceRegister(_serviceRegistration, stoppingToken);
-                _logger.LogInformation(result.StatusCode.ToString());
+                // Set config values
+                _serviceRegistration = new AgentServiceRegistration
+                {
+                    Name = _config.GetValue<string>("name"),
+                    Port = _config.GetValue<int>("port"),
+                    Tags = _config.GetValue<string[]>("tags"),
+                    Meta = _config.GetSection("meta").GetChildren()
+                        .ToDictionary(x => x.Key, x => x.Value)
+                };
 
+                // Set unique ID
+                var rand = new Random();
+                var instanceId = rand.Next().ToString();
+                _serviceRegistration.ID = $"{_serviceRegistration.Name}-{instanceId}";
+
+                // Set hostname
+                var dnsHostName = Dns.GetHostName();
+                var hostname = await Dns.GetHostEntryAsync(dnsHostName, stoppingToken);
+                _serviceRegistration.Address = $"http://{hostname.HostName}";
+
+                _logger.LogInformation("Host name set {HostName}", hostname.HostName);
+
+                // Health Check
+                _serviceRegistration.Check = new AgentServiceCheck
+                {
+                    DeregisterCriticalServiceAfter = TimeSpan.FromMinutes(3),
+                    Interval = TimeSpan.FromSeconds(30),
+                    Timeout = TimeSpan.FromMinutes(1),
+                    HTTP = $"{_serviceRegistration.Address}:{_serviceRegistration.Port}/status"
+                };
+
+                var result =
+                    await _consulClient.Agent.ServiceRegister(_serviceRegistration, stoppingToken);
+
+                _logger.LogInformation(result.StatusCode.ToString());
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $" Unable to register service {_serviceRegistration.Name}");
+                _logger.LogError(ex, $" Unable to register service");
             }
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            await _consulClient.Agent.ServiceDeregister(_serviceRegistration.ID, cancellationToken);
+            if (_serviceRegistration != null)
+            {
+                _logger.LogInformation("Deregistering service");
+                await _consulClient.Agent.ServiceDeregister(_serviceRegistration.ID,
+                    cancellationToken);
+            }
+
             await base.StopAsync(cancellationToken);
         }
     }
