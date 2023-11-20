@@ -6,6 +6,11 @@ using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.ConfigureHttpClientDefaults(client =>
+{
+    client.AddStandardResilienceHandler();
+});
+
 builder.Services.AddConsulClient(builder.Configuration.GetSection("consul:client"));
 
 builder.Services.AddHttpLogging(logging => { logging.LoggingFields = HttpLoggingFields.All; });
