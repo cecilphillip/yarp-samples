@@ -36,7 +36,7 @@ app.MapGet("/", async ctx =>
     {
         AvailableRoutes = new[]
         {
-            $"{baseUrl}/items", $"{baseUrl}/addresses"
+            $"{baseUrl}/items"
         }
     };
 
