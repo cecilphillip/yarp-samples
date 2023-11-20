@@ -2,6 +2,7 @@ using System.Net;
 using Consul;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Health;
+using Yarp.ReverseProxy.LoadBalancing;
 
 namespace CCProxy.Workers;
 
@@ -58,6 +59,7 @@ public class ConsulMonitorWorker : BackgroundService
                 : new ClusterConfig
                 {
                     ClusterId = svc.Service,
+                    LoadBalancingPolicy = LoadBalancingPolicies.RoundRobin,
                     HealthCheck = new()
                     {
                         Active = new ActiveHealthCheckConfig

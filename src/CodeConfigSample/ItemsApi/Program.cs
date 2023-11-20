@@ -57,6 +57,7 @@ app.UseHealthChecks("/status", new HealthCheckOptions
 
 app.MapGroup("/api/items")
     .MapItemApis()
+    .AddEndpointFilter<LBInfoFilter>()
     .WithName("Items API")
     .WithOpenApi();
 

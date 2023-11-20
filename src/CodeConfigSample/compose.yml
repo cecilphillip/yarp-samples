@@ -3,6 +3,7 @@ version: "3.8"
 name: "yarpconsul"
 
 services:
+  ## YARP Proxy ##  
   yarp:
     container_name: yarp_proxy
     build:
@@ -16,7 +17,8 @@ services:
       consul:
         condition: service_started
 
-  itemsapi:
+  ## Fixed Items API ##
+  itemsapi_fixed:
     build:
       context: ./ItemsApi
       dockerfile: Dockerfile
@@ -24,6 +26,21 @@ services:
       - "5010:5010"
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      consul:
+        condition: service_started
+
+  ## Replicatable Items API ##
+  ## This one doesn't bind to a host port so it can be replicated
+  itemsapi:
+    build:
+      context: ./ItemsApi
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    deploy:
+      mode: replicated
+      replicas: 2
     depends_on:
       consul:
         condition: service_started

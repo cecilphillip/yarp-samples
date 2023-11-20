@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ItemsApi;
 
@@ -11,14 +12,14 @@ public static class ItemEndpointsExtensions
         return group;
     }
 
-    private static async Task<Results<Ok<IEnumerable<Item>>, NotFound>> GetItems()
-    {
+    private static async Task<Results<Ok<IEnumerable<Item>>, NotFound>> GetItems(HttpContext ctx)
+    {           
         var result = await DataService.GetItems();
         if (!result.Any()) return TypedResults.NotFound();
         return TypedResults.Ok(result);
     }
 
-    private static async Task<Results<Ok<Item>, NotFound>> GetItemById(int id)
+    private static async Task<Results<Ok<Item>, NotFound>> GetItemById(HttpContext ctx, [FromRoute] int id)
     {
         var item = await DataService.GetItemById(id);
         if (item == null) return TypedResults.NotFound();
