@@ -188,3 +188,4 @@ OpenCover/
 *.binlog
 
 .DS_Store
+.tmp/
