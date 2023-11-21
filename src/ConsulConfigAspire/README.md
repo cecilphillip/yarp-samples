@@ -11,20 +11,8 @@
 
 ## Running the demo
 
-Run demo with docker compose
+Run demo with .NET Aspire
 
 ```shell
-docker compose up --build -d
-```
-
-Set the number of additional instances of the itemsapi to run
-
-```shell
-docker compose up --scale itemsapi=4 -d 
-```
-
-Shut down docker compose containers
-
-```shell
-docker compose down
+dotnet run --project AspireApp.AppHost
 ```
