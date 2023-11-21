@@ -8,4 +8,4 @@
 ## Scenarios
 - [Web API Proxying](src/ApiProxySamples) - Routes requests between different Web APIs based on request path.
 - [Load Balancing](src/LoadBalancingProxySamples) - Routes requests between two instances of the same service.
-- [Code Configuration](src/CodeConfigSample) - Custom IProxyConfigProvider that refreshes configuration using [Consul](https://www.consul.io).
+- [Code Configuration](src/CodeConfigSample) -  InMemoryConfigProvider that refreshes configuration using [Consul](https://www.consul.io).

@@ -1,4 +1,4 @@
-# Load Balancing Sample
+# Code Configuration w/ InMemoryConfigProvider and Consul 
 
 ## Projects
 
