@@ -8,9 +8,9 @@ namespace Aspire.Extensions;
 
 public  static partial class Extensions
 {
-    public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder, string serviceName)
     {
-        builder.ConfigureOpenTelemetry();
+        builder.ConfigureOpenTelemetry(serviceName);
 
         builder.AddDefaultHealthChecks();
 
@@ -22,7 +22,7 @@ public  static partial class Extensions
             http.AddStandardResilienceHandler();
 
             // Turn on service discovery by default
-            http.UseServiceDiscovery();
+            http.AddServiceDiscovery();
         });
 
         return builder;

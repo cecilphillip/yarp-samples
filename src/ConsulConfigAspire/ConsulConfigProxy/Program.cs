@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
+builder.AddServiceDefaults("yarpproxy");
 
 builder.Services.AddConsulClient(builder.Configuration.GetSection("consul:client"));
 

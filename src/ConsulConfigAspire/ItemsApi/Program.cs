@@ -4,13 +4,12 @@ using Aspire.Extensions;
 using ItemsApi;
 using ItemsApi.Workers;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
+builder.AddServiceDefaults("itemsapi");
 
 builder.Services.AddConsulClient(builder.Configuration.GetSection("consul:client"));
 builder.Services.AddHostedService<ConsulRegistrationService>();

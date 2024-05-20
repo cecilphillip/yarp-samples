@@ -1,15 +1,17 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 namespace Aspire.Extensions;
 
 public static partial class Extensions
 {
-    public static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder, string serviceName)
     {
         builder.Logging.AddOpenTelemetry(logging =>
         {
@@ -18,6 +20,14 @@ public static partial class Extensions
         });
 
         builder.Services.AddOpenTelemetry()
+            .ConfigureResource(r => r.AddService(serviceName, "contoso", "v1.0.0-pre")
+                .AddTelemetrySdk()
+                .AddAttributes(new Dictionary<string, object>
+                {
+                    ["environment.name"] = builder.Environment.EnvironmentName,
+                    ["demo.type"] = "yarp-consul"
+                })
+                .AddEnvironmentVariableDetector())
             .WithMetrics(metrics =>
             {
                 metrics.AddRuntimeInstrumentation()
@@ -35,25 +45,9 @@ public static partial class Extensions
                 tracing.AddAspNetCoreInstrumentation()
                     .AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation();
-            });
-
-        builder.AddOpenTelemetryExporters();
-
+            })
+            .UseOtlpExporter();
+        
         return builder;
     }
-
-    private static IHostApplicationBuilder AddOpenTelemetryExporters(this IHostApplicationBuilder builder)
-    {
-        var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
-
-        if (useOtlpExporter)
-        {
-            builder.Services.Configure<OpenTelemetryLoggerOptions>(logging => logging.AddOtlpExporter());
-            builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => metrics.AddOtlpExporter());
-            builder.Services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddOtlpExporter());
-        }
-
-        return builder;
-    }
-
 }

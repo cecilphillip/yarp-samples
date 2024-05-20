@@ -3,6 +3,8 @@ using Consul;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Health;
 using Yarp.ReverseProxy.LoadBalancing;
+using DestinationConfig = Yarp.ReverseProxy.Configuration.DestinationConfig;
+using RouteConfig = Yarp.ReverseProxy.Configuration.RouteConfig;
 
 namespace ConsulConfigProxy.Workers;
 
@@ -77,18 +79,18 @@ public class ConsulMonitorWorker : BackgroundService
                     }
                 };
 
-            var destination = cluster.Destinations is null
+            var destinations = cluster.Destinations is null
                 ? new Dictionary<string, DestinationConfig>()
                 : new Dictionary<string, DestinationConfig>(cluster.Destinations);
 
             var address = $"{svc.Address}:{svc.Port}";
 
-            destination.Add(svc.ID,
+            destinations.Add(svc.ID,
                 new DestinationConfig { Address = address, Health = address });
 
             var newCluster = cluster with
             {
-                Destinations = destination
+                Destinations = destinations
             };
 
             var clusterErrs = await _proxyConfigValidator.ValidateClusterAsync(newCluster);
