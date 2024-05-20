@@ -1,0 +1,15 @@
+// Root request
+GET http://localhost:5000
+Accept: application/json
+
+###
+
+// Get all items
+GET http://localhost:5000/items
+Accept: application/json
+
+###
+
+// Get item by id
+GET http://localhost:5000/items/1
+Accept: application/json

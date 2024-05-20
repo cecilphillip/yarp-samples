@@ -13,7 +13,7 @@ public static class ItemEndpointsExtensions
     }
 
     private static async Task<Results<Ok<IEnumerable<Item>>, NotFound>> GetItems()
-    {           
+    {
         var result = await DataService.GetItems();
         if (!result.Any()) return TypedResults.NotFound();
         return TypedResults.Ok(result);
