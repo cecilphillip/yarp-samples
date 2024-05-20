@@ -3,22 +3,14 @@ using Consul;
 
 namespace ItemsApi.Workers
 {
-    public class ConsulRegistrationService
+    public class ConsulRegistrationService(
+        IConsulClient consulClient,
+        IConfiguration configuration,
+        ILogger<ConsulRegistrationService> logger)
         : BackgroundService
     {
-        private readonly IConsulClient _consulClient;
-        private readonly ILogger<ConsulRegistrationService> _logger;
-        private readonly IConfigurationSection _config;
+        private readonly IConfigurationSection _config = configuration.GetSection("consul:registration");
         private AgentServiceRegistration? _serviceRegistration;
-
-        public ConsulRegistrationService(IConsulClient consulClient,
-            IConfiguration configuration,
-            ILogger<ConsulRegistrationService> logger)
-        {
-            _consulClient = consulClient;
-            _config = configuration.GetSection("consul:registration");
-            _logger = logger;
-        }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -44,7 +36,7 @@ namespace ItemsApi.Workers
                 var hostname = await Dns.GetHostEntryAsync(dnsHostName, stoppingToken);
                 _serviceRegistration.Address = $"http://{hostname.HostName}";
 
-                _logger.LogInformation("Host name set {HostName}", hostname.HostName);
+                logger.LogInformation("Host name set {HostName}", hostname.HostName);
 
                 // Health Check
                 _serviceRegistration.Check = new AgentServiceCheck
@@ -56,13 +48,13 @@ namespace ItemsApi.Workers
                 };
 
                 var result =
-                    await _consulClient.Agent.ServiceRegister(_serviceRegistration, stoppingToken);
+                    await consulClient.Agent.ServiceRegister(_serviceRegistration, stoppingToken);
 
-                _logger.LogInformation(result.StatusCode.ToString());
+                logger.LogInformation("Consul registration result => {Status}" ,result.StatusCode);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $" Unable to register service");
+                logger.LogError(ex, $" Unable to register service");
             }
         }
 
@@ -70,8 +62,8 @@ namespace ItemsApi.Workers
         {
             if (_serviceRegistration != null)
             {
-                _logger.LogInformation("Deregistering service");
-                await _consulClient.Agent.ServiceDeregister(_serviceRegistration.ID,
+                logger.LogInformation("Deregistering service");
+                await consulClient.Agent.ServiceDeregister(_serviceRegistration.ID,
                     cancellationToken);
             }
 

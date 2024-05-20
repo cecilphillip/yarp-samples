@@ -3,43 +3,37 @@ using Consul;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Health;
 using Yarp.ReverseProxy.LoadBalancing;
+using DestinationConfig = Yarp.ReverseProxy.Configuration.DestinationConfig;
+using RouteConfig = Yarp.ReverseProxy.Configuration.RouteConfig;
 
 namespace CCProxy.Workers;
 
-public class ConsulMonitorWorker : BackgroundService
+public class ConsulMonitorWorker(
+    IConsulClient consulClient,
+    IConfigValidator proxyConfigValidator,
+    InMemoryConfigProvider proxyConfigProvider,
+    ILogger<ConsulMonitorWorker> logger)
+    : BackgroundService
 {
-    private readonly IConsulClient _consulClient;
-    private readonly IConfigValidator _proxyConfigValidator;
-    private readonly InMemoryConfigProvider _proxyConfigProvider;
-
-    private readonly ILogger<ConsulMonitorWorker> _logger;
+    // ReSharper disable once InconsistentNaming
     private const int DEFAULT_CONSUL_POLL_INTERVAL_MINS = 2;
-
-    public ConsulMonitorWorker(IConsulClient consulClient, IConfigValidator proxyConfigValidator,
-        InMemoryConfigProvider proxyConfigProvider, ILogger<ConsulMonitorWorker> logger)
-    {
-        _consulClient = consulClient;
-        _proxyConfigValidator = proxyConfigValidator;
-        _proxyConfigProvider = proxyConfigProvider;
-        _logger = logger;
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Updating route config from Consul...");
+            logger.LogInformation("Updating route config from Consul...");
 
-            var serviceResult = await _consulClient.Agent.Services(stoppingToken);
+            var serviceResult = await consulClient.Agent.Services(stoppingToken);
 
             if (serviceResult.StatusCode == HttpStatusCode.OK)
             {
                 var clusters = await ExtractClusters(serviceResult);
                 var routes = await ExtractRoutes(serviceResult);
-                _proxyConfigProvider.Update(routes, clusters);
+                proxyConfigProvider.Update(routes, clusters);
             }
 
-            _logger.LogInformation("Proxy config reloaded");
+            logger.LogInformation("Proxy config reloaded");
 
             await Task.Delay(TimeSpan.FromMinutes(DEFAULT_CONSUL_POLL_INTERVAL_MINS),
                 stoppingToken);
@@ -52,7 +46,7 @@ public class ConsulMonitorWorker : BackgroundService
         var clusters = new Dictionary<string, ClusterConfig>();
         var serviceMapping = serviceResult.Response;
 
-        foreach (var (key, svc) in serviceMapping)
+        foreach (var (_, svc) in serviceMapping)
         {
             var cluster = clusters.TryGetValue(svc.Service, out var existingCluster)
                 ? existingCluster
@@ -91,12 +85,12 @@ public class ConsulMonitorWorker : BackgroundService
                 Destinations = destination
             };
 
-            var clusterErrs = await _proxyConfigValidator.ValidateClusterAsync(newCluster);
+            var clusterErrs = await proxyConfigValidator.ValidateClusterAsync(newCluster);
             if (clusterErrs.Any())
             {
-                _logger.LogError("Errors found when creating clusters for {Service}", svc.Service);
+                logger.LogError("Errors found when creating clusters for {Service}", svc.Service);
                 clusterErrs.ForEach(err =>
-                    _logger.LogError(err, $"{svc.Service} cluster validation error"));
+                    logger.LogError(err, "{Service} cluster validation error", svc.Service));
                 continue;
             }
 
@@ -111,7 +105,7 @@ public class ConsulMonitorWorker : BackgroundService
     {
         var serviceMapping = serviceResult.Response;
         var routes = new List<RouteConfig>();
-        foreach (var (key, svc) in serviceMapping)
+        foreach (var (_, svc) in serviceMapping)
         {
             if (!svc.Meta.TryGetValue("yarp", out string? enableYarp) ||
                 !enableYarp.Equals("enabled", StringComparison.InvariantCulture)) continue;
@@ -141,13 +135,13 @@ public class ConsulMonitorWorker : BackgroundService
                 }
             };
 
-            var routeErrs = await _proxyConfigValidator.ValidateRouteAsync(route);
+            var routeErrs = await proxyConfigValidator.ValidateRouteAsync(route);
             if (routeErrs.Any())
             {
-                _logger.LogError("Errors found when trying to generate routes for {Service}",
+                logger.LogError("Errors found when trying to generate routes for {Service}",
                     svc.Service);
                 routeErrs.ForEach(err =>
-                    _logger.LogError(err, $"{svc.Service} route validation error"));
+                    logger.LogError(err, "{Service} route validation error", svc.Service));
                 continue;
             }
 
