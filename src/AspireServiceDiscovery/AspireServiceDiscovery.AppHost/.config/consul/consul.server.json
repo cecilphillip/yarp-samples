@@ -1,0 +1,14 @@
+{
+  "datacenter": "yarp-aspire-sd",
+  "node_name": "aspirenode",
+  "server": true,
+  "bootstrap": true,
+  "data_dir": "/opt/consul",
+  "log_level": "INFO",
+  "bind_addr": "0.0.0.0",
+  "client_addr": "0.0.0.0",
+  "disable_update_check": true,
+  "ui_config": {
+    "enabled": true
+  }
+}
